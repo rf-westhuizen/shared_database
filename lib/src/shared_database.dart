@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:drift/drift.dart';
@@ -21,7 +22,7 @@ LazyDatabase _openConnection() {
 
 @DriftDatabase(tables: [UserTable])
 class SharedDatabase extends _$SharedDatabase {
-  SharedDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  //SharedDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
   int get schemaVersion => 1;
@@ -29,30 +30,39 @@ class SharedDatabase extends _$SharedDatabase {
   // Singleton instance
   static SharedDatabase? _shareInstance;
   static DriftIsolate? _driftIsolate;
+  static Completer<SharedDatabase> _instanceCompleter = Completer<SharedDatabase>();
 
   factory SharedDatabase.local() {
-    _shareInstance ??= SharedDatabase(_openConnection());
+    if (_shareInstance == null) {
+      throw Exception('SharedDatabase has not been initialized. Call SharedDatabase.initialize() first.');
+    }
     return _shareInstance!;
   }
 
-  static Future<SharedDatabase> getInstance() async {
-    if (_shareInstance == null) {
-      // Check if the drift isolate is already registered
-      final sendPort = IsolateNameServer.lookupPortByName('drift_isolate');
-      if (sendPort == null) {
-        // Create and register the isolate if not found
-        final driftIsolate = await createDriftIsolate();
-        _driftIsolate = driftIsolate;
-        IsolateNameServer.registerPortWithName(driftIsolate.connectPort, 'drift_isolate');
-        _shareInstance = SharedDatabase(await driftIsolate.connect());
-      } else {
-        // Connect to the existing isolate
-        final driftIsolate = DriftIsolate.fromConnectPort(sendPort);
-        _driftIsolate = driftIsolate;
-        _shareInstance = SharedDatabase(await driftIsolate.connect());
-      }
+  SharedDatabase._internal(QueryExecutor executor) : super(executor);
+
+  static Future<void> initialize() async {
+    if (_shareInstance != null) {
+      // Already initialized
+      return;
     }
-    return _shareInstance!;
+
+    // Check if the drift isolate is already registered
+    final sendPort = IsolateNameServer.lookupPortByName('drift_isolate');
+    if (sendPort == null) {
+      // Create and register the isolate if not found
+      final driftIsolate = await createDriftIsolate();
+      _driftIsolate = driftIsolate;
+      IsolateNameServer.registerPortWithName(driftIsolate.connectPort, 'drift_isolate');
+      final connection = await driftIsolate.connect();
+      _shareInstance = SharedDatabase._internal(connection);
+    } else {
+      // Connect to the existing isolate
+      final driftIsolate = DriftIsolate.fromConnectPort(sendPort);
+      _driftIsolate = driftIsolate;
+      final connection = await driftIsolate.connect();
+      _shareInstance = SharedDatabase._internal(connection);
+    }
   }
 
 
