@@ -109,6 +109,13 @@ class UserTableData extends DataClass implements Insertable<UserTableData> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  UserTableData copyWithCompanion(UserTableCompanion data) {
+    return UserTableData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('UserTableData(')
@@ -180,7 +187,7 @@ class UserTableCompanion extends UpdateCompanion<UserTableData> {
 
 abstract class _$SharedDatabase extends GeneratedDatabase {
   _$SharedDatabase(QueryExecutor e) : super(e);
-  _$SharedDatabaseManager get managers => _$SharedDatabaseManager(this);
+  $SharedDatabaseManager get managers => $SharedDatabaseManager(this);
   late final $UserTableTable userTable = $UserTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -189,7 +196,7 @@ abstract class _$SharedDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [userTable];
 }
 
-typedef $$UserTableTableInsertCompanionBuilder = UserTableCompanion Function({
+typedef $$UserTableTableCreateCompanionBuilder = UserTableCompanion Function({
   Value<int> id,
   required String name,
 });
@@ -198,26 +205,80 @@ typedef $$UserTableTableUpdateCompanionBuilder = UserTableCompanion Function({
   Value<String> name,
 });
 
+class $$UserTableTableFilterComposer
+    extends Composer<_$SharedDatabase, $UserTableTable> {
+  $$UserTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+}
+
+class $$UserTableTableOrderingComposer
+    extends Composer<_$SharedDatabase, $UserTableTable> {
+  $$UserTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+}
+
+class $$UserTableTableAnnotationComposer
+    extends Composer<_$SharedDatabase, $UserTableTable> {
+  $$UserTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+}
+
 class $$UserTableTableTableManager extends RootTableManager<
     _$SharedDatabase,
     $UserTableTable,
     UserTableData,
     $$UserTableTableFilterComposer,
     $$UserTableTableOrderingComposer,
-    $$UserTableTableProcessedTableManager,
-    $$UserTableTableInsertCompanionBuilder,
-    $$UserTableTableUpdateCompanionBuilder> {
+    $$UserTableTableAnnotationComposer,
+    $$UserTableTableCreateCompanionBuilder,
+    $$UserTableTableUpdateCompanionBuilder,
+    (
+      UserTableData,
+      BaseReferences<_$SharedDatabase, $UserTableTable, UserTableData>
+    ),
+    UserTableData,
+    PrefetchHooks Function()> {
   $$UserTableTableTableManager(_$SharedDatabase db, $UserTableTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$UserTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$UserTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$UserTableTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$UserTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
           }) =>
@@ -225,7 +286,7 @@ class $$UserTableTableTableManager extends RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
           }) =>
@@ -233,52 +294,32 @@ class $$UserTableTableTableManager extends RootTableManager<
             id: id,
             name: name,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$UserTableTableProcessedTableManager extends ProcessedTableManager<
+typedef $$UserTableTableProcessedTableManager = ProcessedTableManager<
     _$SharedDatabase,
     $UserTableTable,
     UserTableData,
     $$UserTableTableFilterComposer,
     $$UserTableTableOrderingComposer,
-    $$UserTableTableProcessedTableManager,
-    $$UserTableTableInsertCompanionBuilder,
-    $$UserTableTableUpdateCompanionBuilder> {
-  $$UserTableTableProcessedTableManager(super.$state);
-}
+    $$UserTableTableAnnotationComposer,
+    $$UserTableTableCreateCompanionBuilder,
+    $$UserTableTableUpdateCompanionBuilder,
+    (
+      UserTableData,
+      BaseReferences<_$SharedDatabase, $UserTableTable, UserTableData>
+    ),
+    UserTableData,
+    PrefetchHooks Function()>;
 
-class $$UserTableTableFilterComposer
-    extends FilterComposer<_$SharedDatabase, $UserTableTable> {
-  $$UserTableTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$UserTableTableOrderingComposer
-    extends OrderingComposer<_$SharedDatabase, $UserTableTable> {
-  $$UserTableTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class _$SharedDatabaseManager {
+class $SharedDatabaseManager {
   final _$SharedDatabase _db;
-  _$SharedDatabaseManager(this._db);
+  $SharedDatabaseManager(this._db);
   $$UserTableTableTableManager get userTable =>
       $$UserTableTableTableManager(_db, _db.userTable);
 }
